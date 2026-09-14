@@ -1,0 +1,26 @@
+services:
+  easyfile-mcp:
+    build: .
+    restart: unless-stopped
+    environment:
+      EASYFILE_TRANSPORT: http
+      EASYFILE_HOST: 0.0.0.0
+      EASYFILE_PORT: 3000
+      EASYFILE_DATA_DIR: /data
+      EASYFILE_API_KEY: ${EASYFILE_API_KEY:?Set EASYFILE_API_KEY}
+      EASYFILE_ALLOWED_ORIGINS: ${EASYFILE_ALLOWED_ORIGINS:-}
+      EASYFILE_ALLOWED_HOSTS: ${EASYFILE_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      EASYFILE_WEBHOOK_URL: ${EASYFILE_WEBHOOK_URL:-}
+      EASYFILE_WEBHOOK_SECRET: ${EASYFILE_WEBHOOK_SECRET:-}
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - easyfile-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  easyfile-data:

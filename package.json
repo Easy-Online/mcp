@@ -1,0 +1,53 @@
+{
+  "name": "@easy-online-office/easyfile-mcp",
+  "version": "0.1.0",
+  "description": "Model Context Protocol server for EasyFile modules and integrations",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "easyfile-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "README.md",
+    "LICENSE",
+    "SECURITY.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "start:stdio": "node dist/index.js --transport=stdio",
+    "start:http": "node dist/index.js --transport=http",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "engines": {
+    "node": ">=20.11"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Easy-Online/mcp.git"
+  },
+  "homepage": "https://github.com/Easy-Online/mcp#readme",
+  "bugs": {
+    "url": "https://github.com/Easy-Online/mcp/issues"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "dotenv": "^16.6.1",
+    "express": "^5.2.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.1",
+    "@types/express": "^5.0.3",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

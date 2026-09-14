@@ -1,0 +1,58 @@
+id: /subscriptions/840b337e-4a5d-49d9-9739-b7055e1153e9/resourceGroups/rg-easyfile-mcp-prod/providers/Microsoft.App/containerapps/easyfile-mcp-prod-za
+identity:
+  type: None
+location: South Africa North
+name: easyfile-mcp-prod-za
+properties:
+  configuration:
+    activeRevisionsMode: Single
+    ingress:
+      allowInsecure: false
+      external: true
+      targetPort: 3000
+      traffic:
+      - latestRevision: true
+        weight: 100
+      transport: Auto
+    maxInactiveRevisions: 100
+    registries:
+    - identity: ''
+      passwordSecretRef: cad05d47f0bbacrazurecrio-cad05d47f0bbacr
+      server: cad05d47f0bbacr.azurecr.io
+      username: cad05d47f0bbacr
+    secrets:
+    - name: cad05d47f0bbacrazurecrio-cad05d47f0bbacr
+    - name: mcp-api-key
+  environmentId: /subscriptions/840b337e-4a5d-49d9-9739-b7055e1153e9/resourceGroups/rg-easyfile-mcp-prod/providers/Microsoft.App/managedEnvironments/easyfile-mcp-prod-za-env
+  template:
+    containers:
+    - env:
+      - name: EASYFILE_TRANSPORT
+        value: http
+      - name: EASYFILE_HOST
+        value: 0.0.0.0
+      - name: EASYFILE_PORT
+        value: '3000'
+      - name: EASYFILE_DATA_DIR
+        value: /data
+      - name: EASYFILE_API_KEY
+        secretRef: mcp-api-key
+      image: cad05d47f0bbacr.azurecr.io/easyfile-mcp-prod-za:20260914234634448890
+      name: easyfile-mcp-prod-za
+      resources:
+        cpu: 0.5
+        memory: 1Gi
+      volumeMounts:
+      - volumeName: easyfile-data
+        mountPath: /data
+    scale:
+      cooldownPeriod: 300
+      maxReplicas: 1
+      minReplicas: 1
+      pollingInterval: 30
+    volumes:
+    - name: easyfile-data
+      storageName: easyfiledata
+      storageType: AzureFile
+resourceGroup: rg-easyfile-mcp-prod
+type: Microsoft.App/containerApps

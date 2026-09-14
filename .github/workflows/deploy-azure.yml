@@ -1,0 +1,78 @@
+name: Deploy EasyFile MCP to Azure
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: easyfile-mcp-production
+  cancel-in-progress: false
+
+env:
+  AZURE_RESOURCE_GROUP: rg-easyfile-mcp-prod
+  AZURE_CONTAINER_APP: easyfile-mcp-prod-za
+  AZURE_ACR_NAME: cad05d47f0bbacr
+  AZURE_ACR_LOGIN_SERVER: cad05d47f0bbacr.azurecr.io
+  IMAGE_NAME: easyfile-mcp-prod-za
+
+jobs:
+  deploy:
+    name: Test, build, and deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate TypeScript
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build application
+        run: npm run build
+
+      - name: Sign in to Azure with OpenID Connect
+        uses: azure/login@v2
+        with:
+          client-id: 46bc907b-c1e7-4447-9490-480a35e1ca32
+          tenant-id: 338a8916-80d9-467c-a94a-7f61d04ef7d5
+          subscription-id: 840b337e-4a5d-49d9-9739-b7055e1153e9
+
+      - name: Build and publish container image
+        run: |
+          az acr login --name "$AZURE_ACR_NAME"
+          docker build --tag "$AZURE_ACR_LOGIN_SERVER/$IMAGE_NAME:${GITHUB_SHA}" .
+          docker push "$AZURE_ACR_LOGIN_SERVER/$IMAGE_NAME:${GITHUB_SHA}"
+
+      - name: Deploy image to Azure Container Apps
+        run: |
+          az extension add --name containerapp --upgrade --yes
+          az containerapp update \
+            --name "$AZURE_CONTAINER_APP" \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --image "$AZURE_ACR_LOGIN_SERVER/$IMAGE_NAME:${GITHUB_SHA}" \
+            --output none
+
+      - name: Confirm the live health endpoint
+        run: |
+          for attempt in {1..12}; do
+            curl --fail --silent --show-error https://mcp.easyfile.co.za/health && exit 0
+            sleep 10
+          done
+          exit 1
